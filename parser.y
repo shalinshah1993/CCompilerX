@@ -15,7 +15,8 @@ Date Created - 15th March
 
 /* prototypes */
 nodeType *opr(int oper, int nops, ...);
-nodeType *id(int i);
+nodeType *declareId(const char* i, int j);
+nodeType *checkId(const char* i);
 nodeType *con(int value);
 void freeNode(nodeType *p);
 int ex(nodeType *p);
@@ -23,6 +24,8 @@ int yylex(void);
 
 void yyerror(char *s);
 int sym[26];                    /* symbol table */
+symTableNode *symTable;
+
 extern FILE *yyin;              /* take input from a file not stdin*/
 
 char* FILE_EXTENSION = "ccx";
@@ -30,12 +33,13 @@ char* FILE_EXTENSION = "ccx";
 
 %union {
     int iValue;                 /* integer value */
-    char sIndex;                /* symbol table index */
+    //char sIndex;                /* symbol table index */
+    char* id;
     nodeType *nPtr;             /* node pointer */
 };
 
 %token <iValue> INTEGER
-%token <sIndex> VARIABLE
+%token <id> VARIABLE
 %token WHILE IF PRINT
 %nonassoc IFX
 %nonassoc ELSE
@@ -63,7 +67,7 @@ stmt:
           ';'                            { $$ = opr(';', 2, NULL, NULL); }
         | expr ';'                       { $$ = $1; }
         | PRINT expr ';'                 { $$ = opr(PRINT, 1, $2); }
-        | VARIABLE '=' expr ';'          { $$ = opr('=', 2, id($1), $3); }
+        | VARIABLE '=' expr ';'          { $$ = opr('=', 2, declareId($1, 0), $3); /*printf("\nvariable declared\n");*/}
         | WHILE '(' expr ')' stmt        { $$ = opr(WHILE, 2, $3, $5); }
         | IF '(' expr ')' stmt %prec IFX { $$ = opr(IF, 2, $3, $5); }
         | IF '(' expr ')' stmt ELSE stmt { $$ = opr(IF, 3, $3, $5, $7); }
@@ -77,7 +81,7 @@ stmt_list:
 
 expr:
           INTEGER               { $$ = con($1); }
-        | VARIABLE              { $$ = id($1); }
+        | VARIABLE              { $$ = checkId($1); /*printf("\nvariable used\n");*/}
         | '-' expr %prec UMINUS { $$ = opr(UMINUS, 1, $2); }
         | expr '+' expr         { $$ = opr('+', 2, $1, $3); }
         | expr '-' expr         { $$ = opr('-', 2, $1, $3); }
@@ -108,18 +112,57 @@ nodeType *con(int value) {
     return p;
 }
 
-nodeType *id(int i) {
-    nodeType *p;
+nodeType *declareId(const char* name, int value) {
+    nodeType* newTreeNode = NULL;
+    	
+    if(getSym(name) == NULL)
+    {
+	/* allocate node in AST */
+	if ((newTreeNode = malloc(sizeof(nodeType))) == NULL)
+	    yyerror("out of memory");
 
-    /* allocate node */
-    if ((p = malloc(sizeof(nodeType))) == NULL)
-        yyerror("out of memory");
+	/* copy information and put variable inside symbol table */
+	newTreeNode->type = typeId;
+	newTreeNode->id = putSym(name, value);
+	//p->id.i = i;
+     }
+    else
+    {
+	printf("\nSymbol is already declared. Updating..\n");
+	/* allocate node in AST */
+	if ((newTreeNode = malloc(sizeof(nodeType))) == NULL)
+	    yyerror("out of memory");
+	
+	/* copy information and put variable inside symbol table */
+	newTreeNode->type = typeId;
+	newTreeNode->id = getSym(name);
+    }
+	
+    return newTreeNode;
+}
 
-    /* copy information */
-    p->type = typeId;
-    p->id.i = i;
+nodeType *checkId(const char* name) {
+    nodeType* newTreeNode = NULL;
+    symTableNode* tempNode = getSym(name);
+    
+    if(tempNode != NULL)
+    {
+	/* allocate node in AST */
+	if ((newTreeNode = malloc(sizeof(nodeType))) == NULL)
+	    yyerror("out of memory");
 
-    return p;
+	/* copy information and put variable inside symbol table */
+	newTreeNode->type = typeId;
+	newTreeNode->id = tempNode;
+	//p->id.i = i;
+     }
+    else
+    {
+	printf("\nError! No such symbol %s found.\n", name);
+	exit(0);
+    }
+	
+    return newTreeNode;
 }
 
 nodeType *opr(int oper, int nops, ...) {
@@ -169,10 +212,12 @@ int main(int argc, char *argv[]) {
         printf("Please enter a chemical copiler file name as argument.\n\n");
     }else{
         yyin = fopen(argv[1], "r");
-
+        symTable = NULL;
+        
         /* fopen returns 0, the NULL pointer, on failure */
         if(yyin == 0){
             printf("Sorry, error handling the file.\n\n");
+            yyparse();
         }else{
             yyparse();
         }

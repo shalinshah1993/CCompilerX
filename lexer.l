@@ -12,13 +12,9 @@ Date Created - 15th March
 #include "y.tab.h"
 void yyerror(char *);
 %}
-
+IDENTIFIER	[a-z][a-z0-9]*
+WHITESPACE	[ \t\n]+ 
 %%
-
-[a-z]       { 
-                yylval.sIndex = *yytext - 'a';
-                return VARIABLE;
-            }
 
 0           {
                 yylval.iValue = atoi(yytext);
@@ -31,8 +27,8 @@ void yyerror(char *);
             }
 
 [-()<>=+*/;{}.] {
-                return *yytext;
-             }
+		    return *yytext;
+		}
 
 ">="            return GE;
 "<="            return LE;
@@ -43,7 +39,14 @@ void yyerror(char *);
 "else"          return ELSE;
 "print"         return PRINT;
 
-[ \t\n]+        ;       /* ignore whitespace */
+{IDENTIFIER} {
+		yylval.id = (char *) strdup(yytext);
+                //yylval.sIndex = *yytext - 'a';
+                return VARIABLE;
+             }
+
+
+{WHITESPACE}       ;       /* ignore whitespace */
 
 .               yyerror("Unknown character");
 %%

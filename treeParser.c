@@ -15,7 +15,7 @@ Date Created - 15th March
 
 //static int lbl;
 //static gdsl_stack_t stack;
-void generateXMLCode();
+//extern struct symTableNode* symTable;
 
 /*
 int ex(nodeType *p) {
@@ -88,7 +88,7 @@ int ex(nodeType *p) {
     return 0;
 }
 */
-
+void generateXMLCode();
 
 int ex(nodeType *root){
   
@@ -96,6 +96,7 @@ int ex(nodeType *root){
     static gdsl_stack_t stack;
     if(!toInitialize){
 	stack = gdsl_stack_alloc("aExpStack", NULL, NULL);
+	//symTable = NULL;
 	toInitialize++;
     }
     static char* xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
@@ -114,7 +115,7 @@ int ex(nodeType *root){
 		    break;
 	    
 	case typeId:
-		    printf("Identifier Name - %c\t", 'a' + root->id.i);
+		    //printf("Identifier Name - %c\t", 'a' + root->id.i);
 		    gdsl_stack_insert(stack, root);
 		    break;
 		     
@@ -131,17 +132,24 @@ int ex(nodeType *root){
 				  if(!gdsl_stack_is_empty(stack))
 				  {
 				      nodeType* rOperand = gdsl_stack_remove(stack);
+				      
 				      if(rOperand->type == typeCon)
 				      {
-					  sym[root->opr.op[0]->id.i] = rOperand->con.value;
+					  updateSym(root->opr.op[0]->id->name, rOperand->con.value);
+					  //sym[root->opr.op[0]->id.i] = rOperand->con.value;
+					  
 				      }
 				      else if(rOperand->type == typeId)
 				      {
-					  sym[root->opr.op[0]->id.i] = sym[rOperand->id.i];
+					  updateSym(root->opr.op[0]->id->name, rOperand->id->value);
+					  //sym[root->opr.op[0]->id.i] = sym[rOperand->id.i];  
 				      }
 				  }
-				  printf("\nSize %lu , Value %d",gdsl_stack_get_size(stack), sym[root->opr.op[0]->id.i]);
-				  //printf("\tpop\t%c", root->opr.op[0]->id.i + 'a');
+// 				  printf("\nSize %lu , Value %d",gdsl_stack_get_size(stack), getSym(root->opr.op[0]->id->name)->value);
+// 				  printf("\tpop\t%c", root->opr.op[0]->id.i + 'a');
+				  //printf("\nEqual %d\n", getSymTableSize());
+				  printf("\nSYMBOL TABLE\n");
+				  printSymTable();
 				  break;
 				  
 			default :
@@ -152,7 +160,7 @@ int ex(nodeType *root){
 				  switch(root->opr.oper) 
 				  {
 				      case '+':   
-						//printf("add\t");
+						printf("add\t");
 						if(!gdsl_stack_is_empty(stack)){
 						    nodeType* lOperand = gdsl_stack_remove(stack);
 						    nodeType* rOperand = gdsl_stack_remove(stack);
@@ -164,23 +172,26 @@ int ex(nodeType *root){
 						    }
 						    else if(lOperand->type == typeId && rOperand->type == typeId)
 						    {
-							lOperand->con.value = sym[lOperand->id.i] + sym[rOperand->id.i];
+							lOperand->con.value = getSym(lOperand->id->name)->value + getSym(rOperand->id->name)->value; 
+							//lOperand->con.value = sym[lOperand->id.i] + sym[rOperand->id.i];
 							lOperand->type = typeCon;
 						    }
 						    else if(lOperand->type == typeCon && rOperand->type == typeId)
 						    {
-							lOperand->con.value = lOperand->con.value + sym[rOperand->id.i];
+							lOperand->con.value = lOperand->con.value + getSym(rOperand->id->name)->value;
+							//lOperand->con.value = lOperand->con.value + sym[rOperand->id.i];
 						    }
 						    else if(lOperand->type == typeId && rOperand->type == typeCon)
 						    {
-							lOperand->con.value = sym[lOperand->id.i] + rOperand->con.value;
+							lOperand->con.value = getSym(lOperand->id->name)->value + rOperand->con.value;
+							//lOperand->con.value = sym[lOperand->id.i] + rOperand->con.value;
 							lOperand->type = typeCon;
 						    }
 						    
 						    gdsl_stack_insert(stack, lOperand);
 						    generateXMLCode();
 						    
-						    printf("\nSize %lu , Value %d",gdsl_stack_get_size(stack), lOperand->con.value);
+						    //printf("\nSize %lu , Value %d\n",gdsl_stack_get_size(stack), lOperand->con.value);
 						}
 						
 						break;

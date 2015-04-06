@@ -5,6 +5,10 @@ Mentor - Manish K Gupta
 Last Modified - 31st March
 Date Created - 15th March
 */
+//#ifndef SYMBOLTABLE_H
+//#define SYMBOLTABLE_H
+
+#include "lib/uthash.h"
 
 typedef enum { typeCon, typeId, typeOpr } nodeEnum;
 
@@ -13,10 +17,18 @@ typedef struct {
     int value;                  /* value of constant */
 } conNodeType;
 
-/* identifiers */
+// /* identifiers */
+// typedef struct {
+//     char* name;			/* unique name in hash table */
+//     int i;                      /* subscript to sym array */
+// } idNodeType;
+
+/* Node of Hash Table */
 typedef struct {
-    int i;                      /* subscript to sym array */
-} idNodeType;
+    const char *name;
+    int value;
+    UT_hash_handle hh;         /* makes this structure hashable */
+} symTableNode;
 
 /* operators */
 typedef struct {
@@ -30,9 +42,18 @@ typedef struct nodeTypeTag {
 
     union {
         conNodeType con;        /* constants */
-        idNodeType id;          /* identifiers */
+        //idNodeType id;          /* identifiers */
+        symTableNode* id;
         oprNodeType opr;        /* operators */
     };
 } nodeType;
 
 extern int sym[26];
+extern symTableNode *symTable;
+
+symTableNode* putSym (const char* key, int value);
+symTableNode* updateSym(const char* key, int value);
+symTableNode* getSym(const char* key);
+int getSymTableSize();
+void printSymTable();
+//#endif
