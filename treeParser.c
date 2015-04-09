@@ -12,6 +12,7 @@ Date Created - 15th March
 #include "symbolTable.h"
 #include "y.tab.h"
 #include "gdsl.h"
+#include "genReaction.h"
 
 //static int lbl;
 //static gdsl_stack_t stack;
@@ -94,6 +95,8 @@ int ex(nodeType *root){
   
     static int toInitialize = 0;
     static gdsl_stack_t stack;
+    static int REAC_ID = 0;
+    
     if(!toInitialize){
 	stack = gdsl_stack_alloc("aExpStack", NULL, NULL);
 	//symTable = NULL;
@@ -110,12 +113,10 @@ int ex(nodeType *root){
     switch(root->type)
     {
 	case typeCon:
-		    //printf("Constant - %d\t",root->con.value);
 		    gdsl_stack_insert(stack, root);
 		    break;
 	    
 	case typeId:
-		    //printf("Identifier Name - %c\t", 'a' + root->id.i);
 		    gdsl_stack_insert(stack, root);
 		    break;
 		     
@@ -136,20 +137,14 @@ int ex(nodeType *root){
 				      if(rOperand->type == typeCon)
 				      {
 					  updateSym(root->opr.op[0]->id->name, rOperand->con.value);
-					  //sym[root->opr.op[0]->id.i] = rOperand->con.value;
-					  
 				      }
 				      else if(rOperand->type == typeId)
 				      {
 					  updateSym(root->opr.op[0]->id->name, rOperand->id->value);
-					  //sym[root->opr.op[0]->id.i] = sym[rOperand->id.i];  
 				      }
 				  }
-// 				  printf("\nSize %lu , Value %d",gdsl_stack_get_size(stack), getSym(root->opr.op[0]->id->name)->value);
-// 				  printf("\tpop\t%c", root->opr.op[0]->id.i + 'a');
-				  //printf("\nEqual %d\n", getSymTableSize());
-				  printf("\nSYMBOL TABLE\n");
-				  printSymTable();
+// 				  printf("\nSYMBOL TABLE\n");
+// 				  printSymTable();
 				  break;
 				  
 			default :
@@ -160,12 +155,12 @@ int ex(nodeType *root){
 				  switch(root->opr.oper) 
 				  {
 				      case '+':   
-						printf("add\t");
+						//printf("add\t");
 						if(!gdsl_stack_is_empty(stack)){
 						    nodeType* lOperand = gdsl_stack_remove(stack);
 						    nodeType* rOperand = gdsl_stack_remove(stack);
 						    
-						    //Check type of operands and generate code
+						    //Check type of operands and generate XML code
 						    if(lOperand->type == typeCon && rOperand->type == typeCon)
 						    {
 							lOperand->con.value = lOperand->con.value + rOperand->con.value;
@@ -173,18 +168,15 @@ int ex(nodeType *root){
 						    else if(lOperand->type == typeId && rOperand->type == typeId)
 						    {
 							lOperand->con.value = getSym(lOperand->id->name)->value + getSym(rOperand->id->name)->value; 
-							//lOperand->con.value = sym[lOperand->id.i] + sym[rOperand->id.i];
 							lOperand->type = typeCon;
 						    }
 						    else if(lOperand->type == typeCon && rOperand->type == typeId)
 						    {
 							lOperand->con.value = lOperand->con.value + getSym(rOperand->id->name)->value;
-							//lOperand->con.value = lOperand->con.value + sym[rOperand->id.i];
 						    }
 						    else if(lOperand->type == typeId && rOperand->type == typeCon)
 						    {
 							lOperand->con.value = getSym(lOperand->id->name)->value + rOperand->con.value;
-							//lOperand->con.value = sym[lOperand->id.i] + rOperand->con.value;
 							lOperand->type = typeCon;
 						    }
 						    

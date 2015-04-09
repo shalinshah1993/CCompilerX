@@ -23,15 +23,22 @@ int ex(nodeType *p);
 int yylex(void);
 
 void yyerror(char *s);
-int sym[26];                    /* symbol table */
+//int sym[26];                    /* symbol table */
 symTableNode *symTable;
+registers localx, localy, localz;
+
+const int FAST_REACT_PROPENSITY = 1000;
+const int SLOW_REACT_PROPENSITY = 10;
+const int DECIMAL_VALUE = 10;
+const int INTEGER_BUFFER_SIZE = 4;      /* 32 bits size */
 
 extern FILE *yyin;              /* take input from a file not stdin*/
 
 char* FILE_EXTENSION = "ccx";
 %}
 
-%union {
+%union 
+{
     int iValue;                 /* integer value */
     //char sIndex;                /* symbol table index */
     char* id;
@@ -98,7 +105,8 @@ expr:
 
 %%
 
-nodeType *con(int value) {
+nodeType *con(int value) 
+{
     nodeType *p;
 
     /* allocate node */
@@ -112,7 +120,8 @@ nodeType *con(int value) {
     return p;
 }
 
-nodeType *declareId(const char* name, int value) {
+nodeType *declareId(const char* name, int value) 
+{
     nodeType* newTreeNode = NULL;
     	
     if(getSym(name) == NULL)
@@ -141,7 +150,8 @@ nodeType *declareId(const char* name, int value) {
     return newTreeNode;
 }
 
-nodeType *checkId(const char* name) {
+nodeType *checkId(const char* name) 
+{
     nodeType* newTreeNode = NULL;
     symTableNode* tempNode = getSym(name);
     
@@ -165,7 +175,8 @@ nodeType *checkId(const char* name) {
     return newTreeNode;
 }
 
-nodeType *opr(int oper, int nops, ...) {
+nodeType *opr(int oper, int nops, ...) 
+{
     va_list ap;
     nodeType *p;
     int i;
@@ -187,7 +198,8 @@ nodeType *opr(int oper, int nops, ...) {
     return p;
 }
 
-void freeNode(nodeType *p) {
+void freeNode(nodeType *p) 
+{
     int i;
 
     if (!p) return;
@@ -199,26 +211,41 @@ void freeNode(nodeType *p) {
     free (p);
 }
 
-void yyerror(char *s) {
+void yyerror(char *s) 
+{
     fprintf(stdout, "%s\n", s);
 }
 
 /* Starting point of code */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
     
     // Check the file extension and arguments
     strtok(argv[1], ".");
-    if(argc != 2 || strcmp(strtok(NULL, "."), FILE_EXTENSION) != 0){
+    if(argc == 1)
+    {
+	/* Take input from stdin */
+	printf("Chemical Compiler V-1.0 (Interpreter Mode)\n");
+	yyparse();
+    }
+    else if(argc != 2 || strcmp(strtok(NULL, "."), FILE_EXTENSION) != 0)
+    {
         printf("Please enter a chemical copiler file name as argument.\n\n");
-    }else{
-        yyin = fopen(argv[1], "r");
+    }
+    else
+    {
+        yyin = fopen(strcat(argv[1], ".ccx"), "r");
+        /* uthash lib requires to set symTable pointer be set to null */
         symTable = NULL;
+        //printf("\n%s %d\n", argv[1], argc);
         
         /* fopen returns 0, the NULL pointer, on failure */
-        if(yyin == 0){
+        if(!yyin)
+        {
             printf("Sorry, error handling the file.\n\n");
-            yyparse();
-        }else{
+        }
+        else
+        {
             yyparse();
         }
     }

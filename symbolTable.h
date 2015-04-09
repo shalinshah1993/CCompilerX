@@ -37,6 +37,11 @@ typedef struct {
     struct nodeTypeTag **op;	/* operands */
 } oprNodeType;
 
+typedef struct {
+    int isEmpty;
+    int value;
+} registers;
+
 typedef struct nodeTypeTag {
     nodeEnum type;              /* type of node */
 
@@ -48,8 +53,9 @@ typedef struct nodeTypeTag {
     };
 } nodeType;
 
-extern int sym[26];
+//extern int sym[26];
 extern symTableNode *symTable;
+extern registers localx, localy, localz;
 
 symTableNode* putSym (const char* key, int value);
 symTableNode* updateSym(const char* key, int value);

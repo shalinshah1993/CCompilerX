@@ -11,19 +11,18 @@ Date Created - 3rd April
 #include <string.h>
 #include <stdlib.h>
 
-char* appendString(char* dest, char* src)
+char* appendString(const char* old, const char* new)
 {
-    char *buffer = (char *)malloc(strlen(src) + strlen(dest) + 1);
+    // find the size of the string to allocate
+    const size_t old_len = strlen(old), new_len = strlen(new);
+    const size_t out_len = old_len + new_len + 1;
+
+    // allocate a pointer to the new string
+    char *out = malloc(out_len);
+
+    // concat both strings and return
+    memcpy(out, old, old_len);
+    memcpy(out + old_len, new, new_len + 1);
     
-    if(buffer != NULL)
-    {
-	strcpy(buffer, dest);
-	strcat(buffer, src);
-    }
-    else
-    {
-      printf("\nError! Out of memory.\n");
-    }
-    
-    return buffer;
+    return out;
 }

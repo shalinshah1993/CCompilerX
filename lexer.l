@@ -12,6 +12,7 @@ Date Created - 15th March
 #include "y.tab.h"
 void yyerror(char *);
 %}
+
 IDENTIFIER	[a-z][a-z0-9]*
 WHITESPACE	[ \t\n]+ 
 %%
@@ -41,7 +42,6 @@ WHITESPACE	[ \t\n]+
 
 {IDENTIFIER} {
 		yylval.id = (char *) strdup(yytext);
-                //yylval.sIndex = *yytext - 'a';
                 return VARIABLE;
              }
 
