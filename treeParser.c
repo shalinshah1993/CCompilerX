@@ -14,10 +14,6 @@ Date Created - 15th March
 #include "gdsl.h"
 #include "genReaction.h"
 
-//static int lbl;
-//static gdsl_stack_t stack;
-//extern struct symTableNode* symTable;
-
 /*
 int ex(nodeType *p) {
     int lbl1, lbl2;
@@ -99,11 +95,12 @@ int ex(nodeType *root){
     
     if(!toInitialize){
 	stack = gdsl_stack_alloc("aExpStack", NULL, NULL);
-	//symTable = NULL;
+	//genCopyReac("x1", "_localz", 1);
 	toInitialize++;
     }
     static char* xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
     <cain version=\"1.10\">";
+    static char* reacString = "";
     
     if(!root)
 	return 0;
@@ -114,6 +111,7 @@ int ex(nodeType *root){
     {
 	case typeCon:
 		    gdsl_stack_insert(stack, root);
+		    putTempConst (root->con.value);
 		    break;
 	    
 	case typeId:
@@ -143,8 +141,11 @@ int ex(nodeType *root){
 					  updateSym(root->opr.op[0]->id->name, rOperand->id->value);
 				      }
 				  }
-// 				  printf("\nSYMBOL TABLE\n");
-// 				  printSymTable();
+				  printf("\nSYMBOL TABLE\n");
+				  printSymTable();
+				  
+				  printf("\nCONST TABLE\n");
+				  printTempConstTable();
 				  break;
 				  
 			default :
@@ -164,11 +165,23 @@ int ex(nodeType *root){
 						    if(lOperand->type == typeCon && rOperand->type == typeCon)
 						    {
 							lOperand->con.value = lOperand->con.value + rOperand->con.value;
+							genClearReac ("_localx", REAC_ID);
+							REAC_ID = REAC_ID + 5;
+							genClearReac ("_localy", REAC_ID);
+							REAC_ID = REAC_ID + 5;
+							genCopyReac ("_localx", "_localz", REAC_ID);
+							REAC_ID = REAC_ID + 5;
+							genCopyReac ("_localy", "_localz", REAC_ID);
+							REAC_ID = REAC_ID + 5;
 						    }
 						    else if(lOperand->type == typeId && rOperand->type == typeId)
 						    {
 							lOperand->con.value = getSym(lOperand->id->name)->value + getSym(rOperand->id->name)->value; 
 							lOperand->type = typeCon;
+							genCopyReac (lOperand->id->name, "_localz", REAC_ID);
+							REAC_ID = REAC_ID + 5;
+							genCopyReac (rOperand->id->name, "_localz", REAC_ID);
+							REAC_ID = REAC_ID + 5;
 						    }
 						    else if(lOperand->type == typeCon && rOperand->type == typeId)
 						    {

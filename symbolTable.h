@@ -30,6 +30,13 @@ typedef struct {
     UT_hash_handle hh;         /* makes this structure hashable */
 } symTableNode;
 
+/* Node of Hash Table */
+typedef struct {
+    int key;
+    char* value;
+    UT_hash_handle hh;         /* makes this structure hashable */
+} tempVarTableNode;
+
 /* operators */
 typedef struct {
     int oper;                   /* operator */
@@ -55,7 +62,14 @@ typedef struct nodeTypeTag {
 
 //extern int sym[26];
 extern symTableNode *symTable;
-extern registers localx, localy, localz;
+extern tempVarTableNode *tempVarTable;
+extern registers _localx, _localy, _localz;
+
+tempVarTableNode* putTempConst (const int key);
+tempVarTableNode* getTempConst (const int key);
+int getTempVarTableSize ();
+void printTempConstTable ();
+
 
 symTableNode* putSym (const char* key, int value);
 symTableNode* updateSym(const char* key, int value);

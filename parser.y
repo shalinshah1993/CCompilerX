@@ -23,9 +23,9 @@ int ex(nodeType *p);
 int yylex(void);
 
 void yyerror(char *s);
-//int sym[26];                    /* symbol table */
 symTableNode *symTable;
-registers localx, localy, localz;
+tempVarTableNode *tempVarTable;
+registers _localx, _localy, _localz;
 
 const int FAST_REACT_PROPENSITY = 1000;
 const int SLOW_REACT_PROPENSITY = 10;
@@ -237,6 +237,7 @@ int main(int argc, char *argv[])
         yyin = fopen(strcat(argv[1], ".ccx"), "r");
         /* uthash lib requires to set symTable pointer be set to null */
         symTable = NULL;
+        tempVarTable = NULL;
         //printf("\n%s %d\n", argv[1], argc);
         
         /* fopen returns 0, the NULL pointer, on failure */

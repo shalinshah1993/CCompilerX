@@ -8,9 +8,11 @@ Date Created - 3rd April
 
 #include <stdio.h>
 #include "symbolTable.h"
+#include "extraModules.h"
 #include "y.tab.h"
 #include <string.h>
 
+/* Methods for making symbol tabel of hash map*/
 symTableNode* putSym (const char* key, int value) {
     symTableNode* tempNode = NULL;
     
@@ -23,10 +25,6 @@ symTableNode* putSym (const char* key, int value) {
 	tempNode->value = value;	/* Cannot use strcpy since const is used */
 	HASH_ADD_KEYPTR(hh, symTable, tempNode->name, strlen(tempNode->name), tempNode); 
     }
-//     else
-//     {
-// 	printf("Node exists already! ");
-//     }
     
     return tempNode;
 }
@@ -56,7 +54,6 @@ symTableNode* updateSym (const char* key, int value)
     return replaceNode;
 }
 
-
 symTableNode* getSym (const char* key)
 {
     symTableNode *tempNode = NULL;
@@ -71,11 +68,53 @@ int getSymTableSize ()
     return HASH_COUNT(symTable);
 }
 
-void printSymTable()
+void printSymTable ()
 {
     symTableNode *tempNode = NULL;
 
     for(tempNode = symTable; tempNode != NULL; tempNode = tempNode->hh.next) {
         printf("VARIABLE -- %s : VALUE -- %d\n", tempNode->name, tempNode->value);
+    }
+}
+
+
+/* Methods for making hash map for constants*/
+tempVarTableNode* putTempConst (const int key) {
+    tempVarTableNode* tempNode = NULL;
+    
+    HASH_FIND_INT(tempVarTable, &key, tempNode);  /* name: key already in the hash? */
+    
+    if(tempNode == NULL)
+    {
+	tempNode = (tempVarTableNode*)malloc(sizeof(tempVarTableNode));
+	tempNode->key = key;
+	tempNode->value = decimalToWords(key);
+	HASH_ADD_INT(tempVarTable, key, tempNode); 
+    }
+    
+    return tempNode;
+}
+
+tempVarTableNode* getTempConst (const int key)
+{
+    tempVarTableNode *tempNode = NULL;
+    
+    HASH_FIND_INT(tempVarTable, &key, tempNode);
+	
+    return tempNode;
+}
+
+
+int getTempConstTableSize ()
+{
+    return HASH_COUNT(tempVarTable);
+}
+
+void printTempConstTable ()
+{
+    tempVarTableNode *tempNode = NULL;
+
+    for(tempNode = tempVarTable; tempNode != NULL; tempNode = tempNode->hh.next) {
+        printf("VARIABLE -- %d : VALUE -- %s\n", tempNode->key, tempNode->value);
     }
 }

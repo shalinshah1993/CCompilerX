@@ -10,5 +10,7 @@ Date Created - 3rd April
 //#define EXTRAMODULES_H
 
 char* appendString(const char* dest, const char* src);
+char* prependString(const char* dest, const char* src);
+char* decimalToWords(int num);
 
 //#endif
