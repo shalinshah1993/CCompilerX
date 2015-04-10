@@ -33,6 +33,7 @@ const int DECIMAL_VALUE = 10;
 const int INTEGER_BUFFER_SIZE = 4;      /* 32 bits size */
 
 extern FILE *yyin;              /* take input from a file not stdin*/
+FILE *xmlFile, *temp1, *temp2;  /* write output to a xml file*/
 
 char* FILE_EXTENSION = "ccx";
 %}
@@ -133,7 +134,6 @@ nodeType *declareId(const char* name, int value)
 	/* copy information and put variable inside symbol table */
 	newTreeNode->type = typeId;
 	newTreeNode->id = putSym(name, value);
-	//p->id.i = i;
      }
     else
     {
@@ -164,7 +164,6 @@ nodeType *checkId(const char* name)
 	/* copy information and put variable inside symbol table */
 	newTreeNode->type = typeId;
 	newTreeNode->id = tempNode;
-	//p->id.i = i;
      }
     else
     {
@@ -238,7 +237,14 @@ int main(int argc, char *argv[])
         /* uthash lib requires to set symTable pointer be set to null */
         symTable = NULL;
         tempVarTable = NULL;
-        //printf("\n%s %d\n", argv[1], argc);
+        _localz.isEmpty = 1;
+        
+        /* Remove tmp files from last session */
+        remove("tmp/test1.xml");
+        remove("tmp/test2.xml");
+        xmlFile = fopen("test.xml", "a+");
+	temp1 = fopen("tmp/test1.xml", "a+");
+	temp2 = fopen("tmp/test2.xml", "a+");
         
         /* fopen returns 0, the NULL pointer, on failure */
         if(!yyin)
@@ -249,6 +255,9 @@ int main(int argc, char *argv[])
         {
             yyparse();
         }
+        fclose(xmlFile);
+        fclose(temp1);
+        fclose(temp2);
     }
     return 0;
 }

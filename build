@@ -2,7 +2,7 @@
 bison -y -d parser.y
 flex lexer.l
 gcc -c y.tab.c lex.yy.c
-gcc y.tab.o lex.yy.o treeParser.c symbolTable.c -o ccx -lgdsl
+gcc y.tab.o lex.yy.o treeParser.c symbolTable.c genReaction.c extraModules.c -o ccx -lgdsl -w
 
 #For linking GDSL Lib
 export LD_LIBRARY_PATH=/usr/local/include/gdsl:$LD_LIBRARY_PATH

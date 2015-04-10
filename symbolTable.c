@@ -8,7 +8,6 @@ Date Created - 3rd April
 
 #include <stdio.h>
 #include "symbolTable.h"
-#include "extraModules.h"
 #include "y.tab.h"
 #include <string.h>
 
@@ -79,7 +78,7 @@ void printSymTable ()
 
 
 /* Methods for making hash map for constants*/
-tempVarTableNode* putTempConst (const int key) {
+tempVarTableNode* putTempConst (const int key, char* value) {
     tempVarTableNode* tempNode = NULL;
     
     HASH_FIND_INT(tempVarTable, &key, tempNode);  /* name: key already in the hash? */
@@ -88,7 +87,7 @@ tempVarTableNode* putTempConst (const int key) {
     {
 	tempNode = (tempVarTableNode*)malloc(sizeof(tempVarTableNode));
 	tempNode->key = key;
-	tempNode->value = decimalToWords(key);
+	tempNode->value = value;
 	HASH_ADD_INT(tempVarTable, key, tempNode); 
     }
     

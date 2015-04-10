@@ -130,7 +130,7 @@ char* genClearReac(char* varName, int ID)
     productList[0] = "done";
     outputString = appendString(outputString, genReac(propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1));
     
-    printf("%s \n", outputString);
+    //printf("%s \n", outputString);
     return outputString;
 }
 
@@ -193,6 +193,20 @@ char* genCopyReac (char* varName, char* dest, int ID)
     productList[0] = "done";
     outputString = appendString(outputString, genReac(propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1));
     
-    printf("%s \n", outputString);
+    //printf("%s \n", outputString);
+    return outputString;
+}
+
+char* genSpeciesCode(char* name, int amount)
+{
+    char* outputString = "<species initialAmount=\"";
+    char amountBuffer[4];
+    
+    snprintf(amountBuffer, INTEGER_BUFFER_SIZE,"%d", amount);
+    outputString = appendString(outputString, amountBuffer);
+    outputString = appendString(outputString, "\" name=\"");
+    outputString = appendString(outputString, name);
+    outputString = appendString(outputString, "\"/>\n");
+    
     return outputString;
 }
