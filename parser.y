@@ -37,7 +37,8 @@ extern FILE *yyin;              /* take input from a file not stdin*/
 FILE *xmlFile;                  /* write output to a xml file*/
 //FILE *xmlSpeciesFile, *xmlReacFile;
 
-char* FILE_EXTENSION = "ccx";
+const char* const FILE_EXTENSION = "ccx";
+char* FILE_NAME = "xmlTest.xml";
 %}
 
 %union 
@@ -225,7 +226,7 @@ void terminate()
 
     xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "r");
     xmlReacFile = fopen("tmp/xmlReacFile.xml", "r");
-    xmlFile = fopen("xmlFile.xml", "a+");
+    xmlFile = fopen(FILE_NAME, "a+");
     
     while((ch = fgetc(xmlSpeciesFile) ) != EOF )
         fputc(ch, xmlFile);
@@ -252,6 +253,11 @@ int main(int argc, char *argv[])
     remove("tmp/xmlSpeciesFile.xml");
     remove("tmp/xmlReacFile.xml");
     remove("xmlFile.xml");
+    
+    /* uthash lib requires to set symTable pointer be set to null */
+    symTable = NULL;
+    tempVarTable = NULL;
+    _localz.isEmpty = 1;
         
     // Check the file extension and arguments
     strtok(argv[1], ".");
@@ -261,25 +267,10 @@ int main(int argc, char *argv[])
     	printf("Chemical Compiler V-1.0 (Interpreter Mode)\n");
     	yyparse();
     }
-    else if(argc != 2 || strcmp(strtok(NULL, "."), FILE_EXTENSION) != 0)
-    {
-        printf("Please enter a chemical copiler file name as argument.\n\n");
-    }
-    else
+    else if(argc == 2)
     {
         yyin = fopen(strcat(argv[1], ".ccx"), "r");
-        /* uthash lib requires to set symTable pointer be set to null */
-        symTable = NULL;
-        tempVarTable = NULL;
-        _localz.isEmpty = 1;
-        
-        // xmlReacFile = fopen("tmp/xmlReacFile.xml", "a+");
-        // xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "a+");
-        // if(xmlReacFile == NULL || xmlSpeciesFile == NULL) {
-        //     perror("Failed to open the source");
-        //     return EXIT_FAILURE;
-        // }  
-        
+
         /* fopen returns 0, the NULL pointer, on failure */
         if(!yyin)
         {
@@ -289,6 +280,25 @@ int main(int argc, char *argv[])
         {
             yyparse();
         }
+    }
+    else if(argc == 3)
+    {
+        FILE_NAME = strcat(argv[2], ".xml");
+        yyin = fopen(strcat(argv[1], ".ccx"), "r");
+
+        /* fopen returns 0, the NULL pointer, on failure */
+        if(!yyin)
+        {
+            printf("Sorry, error handling the file.\n\n");
+        }
+        else
+        {
+            yyparse();
+        }
+    }
+    else if(strcmp(strtok(NULL, "."), FILE_EXTENSION) != 0)
+    {
+        printf("Please enter a chemical copiler file name as argument.\n\n");
     }
     return 0;
 }
