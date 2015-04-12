@@ -213,8 +213,7 @@ char* genSpeciesCode(char* name, int amount)
     snprintf(amountBuffer, INTEGER_BUFFER_SIZE - 1,"%d", amount);
 
     char* outputString = appendString("<species initialAmount=\"", amountBuffer);
-    outputString = appendString(outputString, amountBuffer);
-    outputString = appendString(outputString, "\" name=\"");
+    outputString = appendString(outputString, "\" id=\"");
     outputString = appendString(outputString, name);
     outputString = appendString(outputString, "\"/>\n");
 

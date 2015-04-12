@@ -219,6 +219,27 @@ void yyerror(char *s)
 
 void terminate()
 {
+    printf("Terminating\n");
+    FILE *xmlSpeciesFile, *xmlReacFile;
+    char ch;
+
+    xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "r");
+    xmlReacFile = fopen("tmp/xmlReacFile.xml", "r");
+    xmlFile = fopen("xmlFile.xml", "a+");
+    
+    while((ch = fgetc(xmlSpeciesFile) ) != EOF )
+        fputc(ch, xmlFile);
+
+    fprintf(xmlFile, "%s\n", "</listOfSpecies>\n\n<listOfReactions>");
+
+    while((ch = fgetc(xmlReacFile) ) != EOF )
+        fputc(ch, xmlFile);
+
+    fprintf(xmlFile, "%s\n", "</listOfReactions>\n</model>\n</listOfModels>\n<listOfMethods>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"1\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"1\" numberOfFrames=\"11\" options=\"0\"/>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"2\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"0\" numberOfFrames=\"11\" options=\"0\"/>\n</listOfMethods>\n<random seed=\"2147483648\">\n</random>\n</cain>");
+
+    fclose(xmlFile);
+    fclose(xmlSpeciesFile);
+    fclose(xmlReacFile);
     printf("Terminated\n");
 
 }
@@ -227,13 +248,18 @@ void terminate()
 int main(int argc, char *argv[]) 
 {
     
+    /* Remove tmp files from last session */
+    remove("tmp/xmlSpeciesFile.xml");
+    remove("tmp/xmlReacFile.xml");
+    remove("xmlFile.xml");
+        
     // Check the file extension and arguments
     strtok(argv[1], ".");
     if(argc == 1)
     {
-	/* Take input from stdin */
-	printf("Chemical Compiler V-1.0 (Interpreter Mode)\n");
-	yyparse();
+    	/* Take input from stdin */
+    	printf("Chemical Compiler V-1.0 (Interpreter Mode)\n");
+    	yyparse();
     }
     else if(argc != 2 || strcmp(strtok(NULL, "."), FILE_EXTENSION) != 0)
     {
@@ -247,9 +273,6 @@ int main(int argc, char *argv[])
         tempVarTable = NULL;
         _localz.isEmpty = 1;
         
-        /* Remove tmp files from last session */
-        remove("tmp/xmlSpeciesFile.xml");
-        remove("tmp/xmlReacFile.xml");
         // xmlReacFile = fopen("tmp/xmlReacFile.xml", "a+");
         // xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "a+");
         // if(xmlReacFile == NULL || xmlSpeciesFile == NULL) {

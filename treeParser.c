@@ -92,29 +92,14 @@ int ex(nodeType *p) {
 */
 void parseTree(nodeType *root)
 {
-	static FILE *xmlSpeciesFile, *xmlReacFile, *xmlFile;
-	char ch;
+	static FILE *xmlSpeciesFile, *xmlReacFile;
+	// char ch;
 
 	xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "a+");
 	xmlReacFile = fopen("tmp/xmlReacFile.xml", "a+");
-	xmlFile = fopen("test.xml", "w");
 
 	ex(xmlSpeciesFile, xmlReacFile, root);
 
-	rewind(xmlReacFile); 
-	rewind(xmlSpeciesFile);
-
-	while((ch = fgetc(xmlSpeciesFile) ) != EOF )
-      fputc(ch, xmlFile);
-
-  	fprintf(xmlFile, "%s\n", "</listOfSpecies>\n");
-
-  	while((ch = fgetc(xmlReacFile) ) != EOF )
-      fputc(ch, xmlFile);
-
-  	fprintf(xmlFile, "%s\n", "</listOfReactions>\n</listOfModels>\n<listOfMethods>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"1\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"1\" numberOfFrames=\"11\" options=\"0\"/>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"2\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"0\" numberOfFrames=\"11\" options=\"0\"/>\n</listOfMethods>\n<random seed=\"2147483648\">\n</random>\n</cain>");
-
-  	fclose(xmlFile);
 	fclose(xmlSpeciesFile);
 	fclose(xmlReacFile);
 }
