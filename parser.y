@@ -19,8 +19,9 @@ nodeType *declareId(const char* i, int j);
 nodeType *checkId(const char* i);
 nodeType *con(int value);
 void freeNode(nodeType *p);
-int ex(nodeType *p);
+void parseTree(nodeType *p);
 int yylex(void);
+void terminate();
 
 void yyerror(char *s);
 symTableNode *symTable;
@@ -30,10 +31,11 @@ registers _localx, _localy, _localz;
 const int FAST_REACT_PROPENSITY = 1000;
 const int SLOW_REACT_PROPENSITY = 10;
 const int DECIMAL_VALUE = 10;
-const int INTEGER_BUFFER_SIZE = 4;      /* 32 bits size */
+const int INTEGER_BUFFER_SIZE = 23;      /* Largest unsigned int is 20 bytes + NULL */
 
 extern FILE *yyin;              /* take input from a file not stdin*/
-FILE *xmlFile, *temp1, *temp2;  /* write output to a xml file*/
+FILE *xmlFile;                  /* write output to a xml file*/
+//FILE *xmlSpeciesFile, *xmlReacFile;
 
 char* FILE_EXTENSION = "ccx";
 %}
@@ -63,11 +65,11 @@ char* FILE_EXTENSION = "ccx";
 %%
 
 program:
-        function                { exit(0); }
+        function                { terminate(); }
         ;
 
 function:
-          function stmt         { ex($2); freeNode($2); }
+          function stmt         { parseTree($2); freeNode($2); }
         | /* NULL */
         ;
 
@@ -215,6 +217,12 @@ void yyerror(char *s)
     fprintf(stdout, "%s\n", s);
 }
 
+void terminate()
+{
+    printf("Terminated\n");
+
+}
+
 /* Starting point of code */
 int main(int argc, char *argv[]) 
 {
@@ -240,11 +248,14 @@ int main(int argc, char *argv[])
         _localz.isEmpty = 1;
         
         /* Remove tmp files from last session */
-        remove("tmp/test1.xml");
-        remove("tmp/test2.xml");
-        xmlFile = fopen("test.xml", "a+");
-	temp1 = fopen("tmp/test1.xml", "a+");
-	temp2 = fopen("tmp/test2.xml", "a+");
+        remove("tmp/xmlSpeciesFile.xml");
+        remove("tmp/xmlReacFile.xml");
+        // xmlReacFile = fopen("tmp/xmlReacFile.xml", "a+");
+        // xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "a+");
+        // if(xmlReacFile == NULL || xmlSpeciesFile == NULL) {
+        //     perror("Failed to open the source");
+        //     return EXIT_FAILURE;
+        // }  
         
         /* fopen returns 0, the NULL pointer, on failure */
         if(!yyin)
@@ -255,9 +266,6 @@ int main(int argc, char *argv[])
         {
             yyparse();
         }
-        fclose(xmlFile);
-        fclose(temp1);
-        fclose(temp2);
     }
     return 0;
 }

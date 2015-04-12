@@ -98,7 +98,7 @@ char* decimalToWords(int num)
 	}
     }
     
-    //printf("%s string value", ++outputString);
-    
+    //printf("%s\n", ++outputString);
+     
     return ++outputString;
 }

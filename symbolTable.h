@@ -63,7 +63,6 @@ typedef struct nodeTypeTag {
 extern symTableNode *symTable;
 extern tempVarTableNode *tempVarTable;
 extern registers _localx, _localy, _localz;
-extern FILE *temp1, *temp2;
 
 tempVarTableNode* putTempConst (const int key, char* value);
 tempVarTableNode* getTempConst (const int key);
