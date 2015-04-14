@@ -38,7 +38,7 @@ FILE *xmlFile;                  /* write output to a xml file*/
 //FILE *xmlSpeciesFile, *xmlReacFile;
 
 const char* const FILE_EXTENSION = "ccx";
-char* FILE_NAME = "xmlTest.xml";
+char* FILE_NAME = "xmlFile.xml";
 %}
 
 %union 
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
     /* Remove tmp files from last session */
     remove("tmp/xmlSpeciesFile.xml");
     remove("tmp/xmlReacFile.xml");
-    remove("xmlFile.xml");
+    remove(strcat(FILE_NAME, ".xml"));
     
     /* uthash lib requires to set symTable pointer be set to null */
     symTable = NULL;

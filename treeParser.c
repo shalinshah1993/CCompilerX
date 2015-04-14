@@ -144,8 +144,16 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 		case typeOpr:
 			switch(root->opr.oper) 
 			{
+				case WHILE:
+				    ex(xmlSpeciesFile, xmlReacFile, root->opr.op[0]);
+				    ex(xmlSpeciesFile, xmlReacFile, root->opr.op[1]);
+				    printf("while\n");
+				    
+			    break;
+
 				case PRINT:     
 					ex(xmlSpeciesFile, xmlReacFile, root->opr.op[0]);
+					nodeType* rOperand = gdsl_stack_remove(stack);
 					printf("\tprint\n");
 				break;
 
@@ -212,10 +220,8 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								//Check type of operands and generate XML code
 								if(lOperand->type == typeCon && rOperand->type == typeCon)
 								{
-									//xmlReacString = appendString (xmlReacString, genCopyReac (decimalToWords(lOperand->con.value), "_localz", REAC_ID));
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(lOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
-									//xmlReacString = appendString (xmlReacString, genCopyReac (decimalToWords(rOperand->con.value), "_localz", REAC_ID));
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(rOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
 
@@ -263,7 +269,53 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 						break;
 					
 						case '-':   printf("\tsub\n"); break; 
-						case '*':   printf("\tmul\n"); break;
+						
+						case '*':   
+							printf("\tmul\n"); 
+							if(!gdsl_stack_is_empty(stack))
+							{
+								nodeType* lOperand = gdsl_stack_remove(stack);
+								nodeType* rOperand = gdsl_stack_remove(stack);
+								//Occupy the register so change state
+								_localz.isEmpty = 0;
+
+								//Check type of operands and generate XML code
+								if(lOperand->type == typeCon && rOperand->type == typeCon)
+								{
+									fprintf(xmlReacFile, "%s", genMulReac (decimalToWords(lOperand->con.value), decimalToWords(rOperand->con.value),"_localz", lOperand->con.value > rOperand->con.value, REAC_ID));
+									REAC_ID = REAC_ID + 16;
+
+									lOperand->con.value = lOperand->con.value * rOperand->con.value;
+								}
+								else if(lOperand->type == typeId && rOperand->type == typeId)
+								{
+									fprintf(xmlReacFile, "%s", genMulReac ((char *)lOperand->id->name, (char *)rOperand->id->name,"_localz", getSym(lOperand->id->name)->value > getSym(rOperand->id->name)->value, REAC_ID));
+									REAC_ID = REAC_ID + 16;
+
+									lOperand->con.value = getSym(lOperand->id->name)->value * getSym(rOperand->id->name)->value; 
+									lOperand->type = typeCon;
+								}
+								else if(lOperand->type == typeCon && rOperand->type == typeId)
+								{
+									fprintf(xmlReacFile, "%s", genMulReac (decimalToWords(lOperand->con.value), (char *)rOperand->id->name,"_localz", lOperand->con.value > getSym(rOperand->id->name)->value, REAC_ID));
+									REAC_ID = REAC_ID + 16;
+
+									lOperand->con.value = lOperand->con.value * getSym(rOperand->id->name)->value; 
+								}
+								else if(lOperand->type == typeId && rOperand->type == typeCon)
+								{
+									fprintf(xmlReacFile, "%s", genMulReac ((char *)lOperand->id->name, decimalToWords(rOperand->con.value),"_localz", getSym(lOperand->id->name)->value > rOperand->con.value, REAC_ID));
+									REAC_ID = REAC_ID + 16;
+
+									lOperand->con.value = getSym(lOperand->id->name)->value * rOperand->con.value; 
+									lOperand->type = typeCon;
+								}
+
+								gdsl_stack_insert(stack, lOperand);
+								//printf("\nSize %lu , Value %d\n",gdsl_stack_get_size(stack), lOperand->con.value);
+							}
+						break;
+						
 						case '/':   printf("\tdiv\n"); break;
 						case '<':   printf("\tcompLT\n"); break;
 						case '>':   printf("\tcompGT\n"); break;
