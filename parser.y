@@ -22,17 +22,22 @@ void freeNode(nodeType *p);
 void parseTree(nodeType *p);
 int yylex(void);
 void terminate();
+char* genSpeciesCode(char* name, int amount);
+void writeVarToXML(FILE* fp);
 
 void yyerror(char *s);
 symTableNode *symTable;
 tempVarTableNode *tempVarTable;
+speciesTableNode *speciesTable;
 registers _localx, _localy, _localz;
 
-const int FAST_REACT_PROPENSITY = 1000;
-const int SLOW_REACT_PROPENSITY = 10;
+const int FAST_REACT_PROPENSITY = 100;
+const int SLOW_REACT_PROPENSITY = 1;
 const int DECIMAL_VALUE = 10;
 const int INTEGER_BUFFER_SIZE = 23;      /* Largest unsigned int is 20 bytes + NULL */
+const int START_AMOUNT = 10000;
 
+extern int yylineno;
 extern FILE *yyin;              /* take input from a file not stdin*/
 FILE *xmlFile;                  /* write output to a xml file*/
 //FILE *xmlSpeciesFile, *xmlReacFile;
@@ -215,7 +220,7 @@ void freeNode(nodeType *p)
 
 void yyerror(char *s) 
 {
-    fprintf(stdout, "%s\n", s);
+    fprintf(stdout, "%s at/near line %d\n", s, yylineno - 1);
 }
 
 void terminate()
@@ -223,15 +228,18 @@ void terminate()
     printf("Terminating\n");
     FILE *xmlSpeciesFile, *xmlReacFile;
     char ch;
+    symTableNode* tempNode = NULL;
 
     xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "r");
     xmlReacFile = fopen("tmp/xmlReacFile.xml", "r");
-    xmlFile = fopen(FILE_NAME, "a+");
+    xmlFile = fopen(FILE_NAME, "w");
     
     while((ch = fgetc(xmlSpeciesFile) ) != EOF )
         fputc(ch, xmlFile);
 
-    fprintf(xmlFile, "%s\n", "</listOfSpecies>\n\n<listOfReactions>");
+    writeVarToXML(xmlFile);
+
+    fprintf(xmlFile, "%s", "</listOfSpecies>\n\n<listOfReactions>\n");
 
     while((ch = fgetc(xmlReacFile) ) != EOF )
         fputc(ch, xmlFile);
@@ -252,7 +260,6 @@ int main(int argc, char *argv[])
     /* Remove tmp files from last session */
     remove("tmp/xmlSpeciesFile.xml");
     remove("tmp/xmlReacFile.xml");
-    remove(strcat(FILE_NAME, ".xml"));
     
     /* uthash lib requires to set symTable pointer be set to null */
     symTable = NULL;

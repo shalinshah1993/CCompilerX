@@ -16,6 +16,20 @@ Date Created - 3rd April
 char* appendString(const char* dest, const char* src);
 char* prependString(const char* dest, const char* src);
 
+char* genSpeciesCode(char* name, int amount)
+{
+    char *amountBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);    
+    snprintf(amountBuffer, INTEGER_BUFFER_SIZE - 1,"%d", amount);
+
+    char* outputString = appendString("<species initialAmount=\"", amountBuffer);
+    outputString = appendString(outputString, "\" id=\"");
+    outputString = appendString(outputString, name);
+    outputString = appendString(outputString, "\"/>\n");
+
+    remove(amountBuffer);
+    return outputString;
+}
+
 char* genReac(char* propensity, char* massAction, char* ID, char* reactantList[], int isReacRepeated, int noOfReactants, char* productList[], int isProdRepeated, int noOfProducts)
 {
     char* outputString = "";
@@ -207,20 +221,6 @@ char* genCopyReac (char* varName, char* dest, int ID)
     return outputString;
 }
 
-char* genSpeciesCode(char* name, int amount)
-{
-    char *amountBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);    
-    snprintf(amountBuffer, INTEGER_BUFFER_SIZE - 1,"%d", amount);
-
-    char* outputString = appendString("<species initialAmount=\"", amountBuffer);
-    outputString = appendString(outputString, "\" id=\"");
-    outputString = appendString(outputString, name);
-    outputString = appendString(outputString, "\"/>\n");
-
-    remove(amountBuffer);
-    return outputString;
-}
-
 /* ********* Multiply Reactions **********
  * while (x > 0){
  *  z = z + y;
@@ -258,7 +258,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
         char* reactantList[] = {start, varA_ab_, varB_ab_};
         char* productList[] = {varB, start, "", ""};    /* Decrement B since smaller*/
         
-        genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 3, productList, 0, 2);
+        outputString = appendString(outputString, genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 3, productList, 0, 2));
 
         //Reaction 2 - start + var1' ---fast--> var1'
         reactantList[0] = start;
@@ -267,7 +267,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
         snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID + 1);
         snprintf(propensityBuffer, INTEGER_BUFFER_SIZE - 1,"%d", FAST_REACT_PROPENSITY);
         
-        genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1);
+        outputString = appendString(outputString, genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1));
 
         //Reaction 3 - start + var2' ---fast--> var2'
         reactantList[0] = start;
@@ -275,7 +275,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
         productList[0] = varBComp;
         snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID + 2);
         
-        genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1);
+        outputString = appendString(outputString, genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1));
 
         //Reaction 4 - start ---slow--> start_add + start_sub
         reactantList[0] = start;
@@ -286,7 +286,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
         start_sub = appendString("start_sub", idBuffer);
         snprintf(propensityBuffer, INTEGER_BUFFER_SIZE - 1,"%d", SLOW_REACT_PROPENSITY);
         
-        genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 1, productList, 0, 2);
+        outputString = appendString(outputString, genReac (propensityBuffer, "true", idBuffer, reactantList, 0, 1, productList, 0, 2));
 
         /* ---------------------- Copy Reactions ---------------------- */
         //Start in copy reactions same as start_add of Raction 4
@@ -601,7 +601,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
 }
 
 /* ********* Decrement Reactions **************  
- * var + start + done(ab) ---slow--> varName' + start
+ * varName + start + done(ab) ---slow--> varName' + start
  * start + varName(ab) ---slow--> done
  * done + varName' + varName' ---fast--> done + varName + varName' + varName^(rx)
  * varName^(rx) ---slow--> 0

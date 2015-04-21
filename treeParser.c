@@ -98,7 +98,7 @@ void parseTree(nodeType *root)
 	xmlSpeciesFile = fopen("tmp/xmlSpeciesFile.xml", "a+");
 	xmlReacFile = fopen("tmp/xmlReacFile.xml", "a+");
 
-	ex(xmlSpeciesFile, xmlReacFile, root);
+	ex(xmlSpeciesFile, xmlReacFile, root);	
 
 	fclose(xmlSpeciesFile);
 	fclose(xmlReacFile);
@@ -117,8 +117,6 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
       	fprintf(xmlSpeciesFile, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<cain version=\"1.10\">\n<listOfModels>\n<model id=\"1\">\n<listOfSpecies>\n");
      	toInitialize++;
 	}
-    //static char* xmlSpeciesString = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<cain version=\"1.10\">\n<listOfModels>\n<model id=\"1\">\n<listOfSpecies>\n";
-    //static char* xmlReacString = "";
 
 	if(!root)
 	{
@@ -132,9 +130,15 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 		case typeCon:
 			gdsl_stack_insert(stack, root);
 			char* decimalInWords = decimalToWords(root->con.value);
-			putTempConst (root->con.value, decimalInWords);
-		 	//xmlSpeciesString = appendString (xmlSpeciesString, genSpeciesCode(decimalInWords, root->con.value));
-			fprintf(xmlSpeciesFile, "%s", genSpeciesCode(decimalInWords, root->con.value));			
+			if(!getTempConst(root->con.value))
+			{
+				putTempConst (root->con.value, decimalInWords);
+				putSpecies (decimalInWords, root->con.value);
+		 		// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(decimalInWords, root->con.value));	
+		 		// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(decimalInWords, strcat(root->con.value, "_"));	
+		 		// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(decimalInWords, strcat(root->con.value, "ab"));
+		 		// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(decimalInWords, strcat(root->con.value, "_"));				
+		 	}
 		break;
 
 		case typeId:
@@ -162,6 +166,14 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 					if(!gdsl_stack_is_empty(stack))
 					{
 						nodeType* rOperand = gdsl_stack_remove(stack);
+						
+						/* Add start to species part */
+						char* idBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);
+						snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID);
+						snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID);
+						fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start", idBuffer), START_AMOUNT));
+						snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID + 5);
+						fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start", idBuffer), START_AMOUNT));
 
 						if(rOperand->type == typeCon)
 						{
@@ -169,35 +181,41 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 
 							if(_localz.isEmpty)
 							{
-								//xmlReacString = appendString(xmlReacString, genCopyReac (decimalToWords(rOperand->con.value), root->opr.op[0]->id->name, REAC_ID));
 								fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(rOperand->con.value), (char *)root->opr.op[0]->id->name, REAC_ID));
 								REAC_ID = REAC_ID + 5;
 							}
 							else
 							{
-								//xmlReacString = appendString(xmlReacString, genCopyReac ("_localz", root->opr.op[0]->id->name, REAC_ID));
 								fprintf(xmlReacFile, "%s", genCopyReac ("_localz", (char *)root->opr.op[0]->id->name, REAC_ID));
 								REAC_ID = REAC_ID + 5;
 							}
+							if(!getSpecies(decimalToWords(rOperand->con.value)))
+										putSpecies (decimalToWords(rOperand->con.value), rOperand->con.value);
 						}
 						else if(rOperand->type == typeId)
 						{
 							updateSym(root->opr.op[0]->id->name, rOperand->id->value);
 
-							//xmlReacString = appendString(xmlReacString, genCopyReac (rOperand->id->name, root->opr.op[0]->id->name, REAC_ID));
 							fprintf(xmlReacFile, "%s", genCopyReac ((char *)rOperand->id->name, (char *)root->opr.op[0]->id->name, REAC_ID));
 							REAC_ID = REAC_ID + 5;
+
+							if(!getSpecies(rOperand->id->name))
+										putSpecies (rOperand->id->name, 0);
 						}
-						//xmlReacString = appendString(xmlReacString, genClearReac ("_localz", REAC_ID));
+						if(!getSpecies(root->opr.op[0]->id->name))
+							putSpecies (root->opr.op[0]->id->name, 0);
+
 						fprintf(xmlReacFile, "%s", genClearReac ("_localz", REAC_ID));
 						_localz.isEmpty = 1;
 						REAC_ID = REAC_ID + 5;
+						remove(idBuffer);
 					}
 					// printf("\nSYMBOL TABLE\n");
 					// printSymTable();
-					// 	    printf("\nCONST TABLE\n");
-					// 	    printTempConstTable();
-					// 	    printf("%s \n\n\n%s", xmlSpeciesString, xmlReacString);
+					// printf("\nCONST TABLE\n");
+					// printTempConstTable();
+					printf("\n SPECIES TABLE\n");
+					printSpeciesTable();
 				break;
 
 
@@ -214,14 +232,27 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 							{
 								nodeType* lOperand = gdsl_stack_remove(stack);
 								nodeType* rOperand = gdsl_stack_remove(stack);
+
+								/* Add start to species part */
+								char* idBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);
+    							snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID);
+								fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start", idBuffer), START_AMOUNT));
+								snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID + 5);
+								fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start", idBuffer), START_AMOUNT));
 								//Occupy the register so change state
 								_localz.isEmpty = 0;
 
 								//Check type of operands and generate XML code
 								if(lOperand->type == typeCon && rOperand->type == typeCon)
 								{
+									if(!getSpecies(decimalToWords(lOperand->con.value)))
+										putSpecies (decimalToWords(lOperand->con.value), lOperand->con.value);
+									if(!getSpecies(decimalToWords(rOperand->con.value)))
+										putSpecies (decimalToWords(rOperand->con.value), rOperand->con.value);
+
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(lOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
+									
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(rOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
 
@@ -229,10 +260,14 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeId && rOperand->type == typeId)
 								{
-									//xmlReacString = appendString (xmlReacString, genCopyReac (lOperand->id->name, "_localz", REAC_ID));
+									if(!getSpecies(lOperand->id->name))
+										putSpecies (lOperand->id->name, 0);
+									if(!getSpecies(rOperand->id->name))
+										putSpecies (rOperand->id->name, 0);
+
 									fprintf(xmlReacFile, "%s", genCopyReac ((char *)lOperand->id->name, "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
-									//xmlReacString = appendString (xmlReacString, genCopyReac (rOperand->id->name, "_localz", REAC_ID));
+									
 									fprintf(xmlReacFile, "%s", genCopyReac ((char *)rOperand->id->name, "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
 
@@ -241,10 +276,14 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeCon && rOperand->type == typeId)
 								{
-									//xmlReacString = appendString (xmlReacString, genCopyReac (decimalToWords(lOperand->con.value), "_localz", REAC_ID));
+									if(!getSpecies(decimalToWords(lOperand->con.value)))
+										putSpecies (decimalToWords(lOperand->con.value), lOperand->con.value);
+									if(!getSpecies(rOperand->id->name))
+										putSpecies (rOperand->id->name, 0);
+
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(lOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
-									//xmlReacString = appendString (xmlReacString, genCopyReac (rOperand->id->name, "_localz", REAC_ID));
+									
 									fprintf(xmlReacFile, "%s", genCopyReac ((char *)rOperand->id->name, "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
 
@@ -252,19 +291,23 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeId && rOperand->type == typeCon)
 								{
-									//xmlReacString = appendString(xmlReacString, genCopyReac (lOperand->id->name, "_localz", REAC_ID));
+									if(!getSpecies(lOperand->id->name))
+										putSpecies (lOperand->id->name, 0);
+									if(!getSpecies(decimalToWords(rOperand->con.value)))
+										putSpecies (decimalToWords(rOperand->con.value), rOperand->con.value);
+
 									fprintf(xmlReacFile, "%s", genCopyReac ((char *)lOperand->id->name, "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
-									//xmlReacString = appendString(xmlReacString, genCopyReac (decimalToWords(rOperand->con.value), "_localz", REAC_ID));
+									
 									fprintf(xmlReacFile, "%s", genCopyReac (decimalToWords(rOperand->con.value), "_localz", REAC_ID));
 									REAC_ID = REAC_ID + 5;
 
 									lOperand->con.value = getSym(lOperand->id->name)->value + rOperand->con.value;
 									lOperand->type = typeCon;
 								}
+								remove(idBuffer);
 
 								gdsl_stack_insert(stack, lOperand);
-								//printf("\nSize %lu , Value %d\n",gdsl_stack_get_size(stack), lOperand->con.value);
 							}
 						break;
 					
@@ -279,9 +322,34 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								//Occupy the register so change state
 								_localz.isEmpty = 0;
 
-								//Check type of operands and generate XML code
+								/* Add start to species part and var_rx, var_rx_ab*/
+								char* idBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);
+    							snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID);
+								fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start", idBuffer), START_AMOUNT));
+								snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", REAC_ID + 3);
+								fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start_add", idBuffer), START_AMOUNT));
+								fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString("start_sub", idBuffer), START_AMOUNT));
+
+								//Check type of operands and generate XML code. Also, generate species for the same.
 								if(lOperand->type == typeCon && rOperand->type == typeCon)
 								{
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(lOperand->con.value), "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(rOperand->con.value), "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(lOperand->con.value), "_rx_ab"), START_AMOUNT));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(rOperand->con.value), "_rx_ab"), START_AMOUNT));
+									if(lOperand->con.value > rOperand->con.value)
+									{
+										char* rxSpecies = appendString(decimalToWords(rOperand->con.value), "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+									else
+									{
+										char* rxSpecies = appendString(decimalToWords(lOperand->con.value), "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);	
+									}
+
 									fprintf(xmlReacFile, "%s", genMulReac (decimalToWords(lOperand->con.value), decimalToWords(rOperand->con.value),"_localz", lOperand->con.value > rOperand->con.value, REAC_ID));
 									REAC_ID = REAC_ID + 16;
 
@@ -289,6 +357,23 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeId && rOperand->type == typeId)
 								{
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)lOperand->id->name, "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)rOperand->id->name, "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)lOperand->id->name, "_rx_ab"), START_AMOUNT));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)rOperand->id->name, "_rx_ab"), START_AMOUNT));
+									if(getSym(lOperand->id->name)->value > getSym(rOperand->id->name)->value)
+									{
+										char* rxSpecies = appendString(rOperand->id->name, "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+									else
+									{
+										char* rxSpecies = appendString(lOperand->id->name, "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+
 									fprintf(xmlReacFile, "%s", genMulReac ((char *)lOperand->id->name, (char *)rOperand->id->name,"_localz", getSym(lOperand->id->name)->value > getSym(rOperand->id->name)->value, REAC_ID));
 									REAC_ID = REAC_ID + 16;
 
@@ -297,6 +382,23 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeCon && rOperand->type == typeId)
 								{
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(lOperand->con.value), "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)lOperand->id->name, "_rx_ab"), START_AMOUNT));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(lOperand->con.value), "_rx_ab"), START_AMOUNT));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)rOperand->id->name, "_rx_ab"), START_AMOUNT));
+									if(lOperand->con.value > getSym(rOperand->id->name)->value)
+									{
+										char* rxSpecies = appendString(rOperand->id->name, "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+									else
+									{
+										char* rxSpecies = appendString(decimalToWords(lOperand->con.value), "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);	
+									}
+
 									fprintf(xmlReacFile, "%s", genMulReac (decimalToWords(lOperand->con.value), (char *)rOperand->id->name,"_localz", lOperand->con.value > getSym(rOperand->id->name)->value, REAC_ID));
 									REAC_ID = REAC_ID + 16;
 
@@ -304,6 +406,23 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 								else if(lOperand->type == typeId && rOperand->type == typeCon)
 								{
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)lOperand->id->name, "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(rOperand->con.value), "_rx"), 0));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString((char *)lOperand->id->name, "_rx_ab"), START_AMOUNT));
+									// fprintf(xmlSpeciesFile, "%s", genSpeciesCode(appendString(decimalToWords(rOperand->con.value), "_rx_ab"), START_AMOUNT));
+									if(getSym(lOperand->id->name)->value > rOperand->con.value)
+									{
+										char* rxSpecies = appendString(decimalToWords(rOperand->con.value), "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+									else
+									{
+										char* rxSpecies = appendString(lOperand->id->name, "_rx");
+										if(!getSpecies(rxSpecies))
+											putSpecies (rxSpecies, 0);
+									}
+									
 									fprintf(xmlReacFile, "%s", genMulReac ((char *)lOperand->id->name, decimalToWords(rOperand->con.value),"_localz", getSym(lOperand->id->name)->value > rOperand->con.value, REAC_ID));
 									REAC_ID = REAC_ID + 16;
 
@@ -312,7 +431,6 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 								}
 
 								gdsl_stack_insert(stack, lOperand);
-								//printf("\nSize %lu , Value %d\n",gdsl_stack_get_size(stack), lOperand->con.value);
 							}
 						break;
 						

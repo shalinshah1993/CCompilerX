@@ -10,11 +10,13 @@ Date Created - 15th March
 #include <stdlib.h>
 #include "symbolTable.h"
 #include "y.tab.h"
+
 void yyerror(char *);
 %}
+%option yylineno
 
 IDENTIFIER	[a-z][a-z0-9]*
-WHITESPACE	[ \t\n]+ 
+WHITESPACE	[ \t]+ 
 %%
 
 0           {
@@ -41,12 +43,16 @@ WHITESPACE	[ \t\n]+
 "print"         return PRINT;
 
 {IDENTIFIER} {
-		yylval.id = (char *) strdup(yytext);
+                yylval.id = (char *) strdup(yytext);
                 return VARIABLE;
              }
 
 
 {WHITESPACE}       ;       /* ignore whitespace */
+
+[\n]*       { 
+                 
+            }
 
 .               yyerror("Unknown character");
 %%
