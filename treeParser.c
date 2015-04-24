@@ -2,7 +2,7 @@
 Chemical Compiler -> AST Parser File
 Author - Shalin Shah
 Mentor - Manish K Gupta
-Last Modified - 31st March
+Last Modified - 23st March
 Date Created - 15th March
 */
 
@@ -214,8 +214,8 @@ void ex(FILE *xmlSpeciesFile, FILE *xmlReacFile, nodeType *root)
 					// printSymTable();
 					// printf("\nCONST TABLE\n");
 					// printTempConstTable();
-					printf("\n SPECIES TABLE\n");
-					printSpeciesTable();
+					// printf("\n SPECIES TABLE\n");
+					// printSpeciesTable();
 				break;
 
 

@@ -2,7 +2,7 @@
 Chemical Compiler -> Parsing File
 Author - Shalin Shah
 Mentor - Manish K Gupta
-Last Modified - 31st March
+Last Modified - 23st March
 Date Created - 15th March
 */
 
@@ -244,7 +244,7 @@ void terminate()
     while((ch = fgetc(xmlReacFile) ) != EOF )
         fputc(ch, xmlFile);
 
-    fprintf(xmlFile, "%s\n", "</listOfReactions>\n</model>\n</listOfModels>\n<listOfMethods>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"1\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"1\" numberOfFrames=\"11\" options=\"0\"/>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"2\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"0\" numberOfFrames=\"11\" options=\"0\"/>\n</listOfMethods>\n<random seed=\"2147483648\">\n</random>\n</cain>");
+    fprintf(xmlFile, "%s\n", "</listOfReactions>\n</model>\n</listOfModels>\n<listOfMethods>\n<method equilibrationTime=\"0.0\" startTime=\"0.0\" recordingTime=\"1.0\" id=\"2\" category=\"0\" numberOfBins=\"32\" multiplicity=\"4\" method=\"0\" timeDependence=\"0\" numberOfFrames=\"11\" options=\"0\"/>\n</listOfMethods>\n<random seed=\"2147483648\">\n</random>\n</cain>");
 
     fclose(xmlFile);
     fclose(xmlSpeciesFile);
