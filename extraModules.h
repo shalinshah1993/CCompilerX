@@ -12,5 +12,6 @@ Date Created - 3rd April
 char* appendString(const char* dest, const char* src);
 char* prependString(const char* dest, const char* src);
 char* decimalToWords(int num);
+void stringCat(char* old, char* new);
 
 #endif

@@ -229,6 +229,7 @@ char* genCopyReac (char* varName, char* dest, int ID)
  */
 char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
 {
+    //printf("THODUK ANDAR\n");
     char* outputString = appendString("\n<!-- Multiplication Reactions for ", varA);
     outputString = appendString(outputString, " and ");
     outputString = appendString(outputString, varB);  
@@ -253,6 +254,7 @@ char* genMulReac (char* varA, char* varB, char* dest, int greater, int ID)
     /* SEQUENCE - CHECK -> COPY -> DECREMENT */
     if(greater)
     {
+        printf("EKDAM ANDAR\n");
         /* ---------------------- Check Reactions(B smaller)  ---------------------- */
         // Reaction 1 - start + var1 + var2 ---slow--> var1 + start_add
         char* reactantList[] = {start, varA_ab_, varB_ab_};
@@ -691,6 +693,45 @@ char* genDecReac (char* varName, int ID)
     /* Free up resources */
     remove(idBuffer);
     remove(propensityBuffer);
+
+    return outputString;
+}
+
+/* ****** Subtraction Reaction ***************
+ * genCopyReac (numB, _localz)
+ * _localz + numA ---fast--> phi
+ * clearReac (_Localz)
+ * genCopyReac (numB, _localz)
+ */
+char* genSubReac (char* numA, char* numB, int ID)
+{
+    char* outputString = appendString("\n<!-- Subtraction Reactions for ", numA);
+    outputString = appendString(outputString, "  and ");
+    outputString = appendString(outputString, numB);
+    outputString = appendString(outputString, " -->\n");
+
+    char* propensityBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);
+    char* idBuffer = (char *) malloc(INTEGER_BUFFER_SIZE);
+    snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID);
+    snprintf(propensityBuffer, INTEGER_BUFFER_SIZE - 1,"%d", FAST_REACT_PROPENSITY);
+
+    //Reaction 1 - Copy to local variable
+    outputString = appendString(outputString, genCopyReac(numB, "_localz", ID));
+    
+    //Reaction 2 - Destroy both the variables
+    char* reactantList[] = {numA, "_localz"};
+    char* productList[] = {"phi"};
+    snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID + 5);
+    outputString = appendString(outputString, "\n<!-- Subtraction Reaction -->\n")
+    outputString = appendString(outputString, genReac(propensityBuffer, "true", idBuffer, reactantList, 0, 2, productList, 0, 1));
+
+    //Reaction 3 - Clear local variable
+    snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID + 5 + 1);
+    outputString = appendString(outputString, genClearReac("_localz", ID));
+
+    //Reaction 4 - Copy output to locak variable
+    snprintf(idBuffer, INTEGER_BUFFER_SIZE - 1,"%d", ID + 5 + 5 + 1);
+    outputString = appendString(outputString, genCopyReac(numA, "_localz", ID));
 
     return outputString;
 }

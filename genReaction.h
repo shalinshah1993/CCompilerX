@@ -12,6 +12,7 @@ char* genClearReac(char* varName, int ID);
 char* genSpeciesCode(char* name, int amount);
 char* genMulReac (char* numA, char* numB, char* dest, int greater, int ID);
 char* genDecReac (char* varName, int ID);
+char* genSubReac (char* numA, char* numB, int ID);
 
 extern const int FAST_REACT_PROPENSITY; 
 extern const int SLOW_REACT_PROPENSITY;
