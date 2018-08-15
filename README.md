@@ -1,7 +1,9 @@
 DNA based chemical compiler - CCompiler X
 ========================================================
 
-This is an attempt to build a trans-compiler which can take C like code as input and generates chemical reactions XML file as output supported by [CAIN](http://www.cacr.caltech.edu/~sean/cain/Welcome.htm). This XML file can be converted to [Visual DSD](http://boson.research.microsoft.com/webdna/) supported file using [CRN2DSD](http://guptalab.org/crn2dsd/) software developed at Gupta Lab. This compiler was developed as a part of my B.Tech project at [DA-IICT](http://www.daiict.ac.in). The supplimentary file for compiler are available at this URL : `http://tiny.cc/chemical-compiler`.
+This is an attempt to build a trans-compiler which can take C like code as input and generates chemical reactions XML file as output supported by [CAIN](http://www.cacr.caltech.edu/~sean/cain/Welcome.htm). This XML file can be converted to [Visual DSD](http://boson.research.microsoft.com/webdna/) supported file using [CRN2DSD](http://guptalab.org/crn2dsd/) software developed at Gupta Lab. This compiler was developed as a part of my B.Tech project at [DA-IICT](http://www.daiict.ac.in). 
+
+If you use this work, please cite our paper: `Shalin Shah, Manish Gupta. "DNA-based Chemical Compiler." arXiv preprint arXiv:1808.04790 (2018)`
 
 **The compiler supports following operations :-** 
 
